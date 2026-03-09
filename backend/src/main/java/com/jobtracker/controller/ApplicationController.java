@@ -3,7 +3,9 @@ package com.jobtracker.controller;
 import com.jobtracker.dto.request.ApplicationRequest;
 import com.jobtracker.dto.response.ApiResponse;
 import com.jobtracker.dto.response.ApplicationResponse;
+import com.jobtracker.dto.response.PageResponse;
 import com.jobtracker.entity.Application;
+import com.jobtracker.entity.ApplicationStatus;
 import com.jobtracker.entity.User;
 import com.jobtracker.exception.ResourceNotFoundException;
 import com.jobtracker.mapper.ApplicationMapper;
@@ -11,13 +13,17 @@ import com.jobtracker.service.ApplicationService;
 import com.jobtracker.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.time.LocalDate;
 
 @RestController
 @RequestMapping("/api/applications")
@@ -34,12 +40,18 @@ public class ApplicationController {
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<ApplicationResponse>>> list(
+    public ResponseEntity<PageResponse<ApplicationResponse>> list(
+            @RequestParam(required = false) ApplicationStatus status,
+            @RequestParam(required = false) String companyName,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate,
+            @PageableDefault(size = 10, sort = "createdAt") Pageable pageable,
             @AuthenticationPrincipal UserDetails userDetails) {
         User user = resolveUser(userDetails);
-        List<ApplicationResponse> body = applicationService.findAll(user.getId())
-                .stream().map(applicationMapper::toResponse).toList();
-        return ResponseEntity.ok(ApiResponse.of(body));
+        Page<ApplicationResponse> page = applicationService
+                .findAll(user.getId(), status, companyName, fromDate, toDate, pageable)
+                .map(applicationMapper::toResponse);
+        return ResponseEntity.ok(PageResponse.of(page));
     }
 
     @GetMapping("/{id}")

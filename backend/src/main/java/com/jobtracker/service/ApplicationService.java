@@ -6,11 +6,15 @@ import com.jobtracker.entity.ApplicationStatus;
 import com.jobtracker.entity.User;
 import com.jobtracker.exception.ResourceNotFoundException;
 import com.jobtracker.repository.ApplicationRepository;
+import com.jobtracker.repository.ApplicationSpecification;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import java.time.LocalDate;
 
 @Service
 @RequiredArgsConstructor
@@ -19,8 +23,25 @@ public class ApplicationService {
     private final ApplicationRepository applicationRepository;
 
     @Transactional(readOnly = true)
-    public List<Application> findAll(Long userId) {
-        return applicationRepository.findAllByUserId(userId);
+    public Page<Application> findAll(Long userId, ApplicationStatus status,
+                                     String companyName, LocalDate fromDate,
+                                     LocalDate toDate, Pageable pageable) {
+        Specification<Application> spec = Specification.where(ApplicationSpecification.byUserId(userId));
+
+        if (status != null) {
+            spec = spec.and(ApplicationSpecification.byStatus(status));
+        }
+        if (companyName != null && !companyName.isBlank()) {
+            spec = spec.and(ApplicationSpecification.companyNameContains(companyName));
+        }
+        if (fromDate != null) {
+            spec = spec.and(ApplicationSpecification.appliedDateFrom(fromDate));
+        }
+        if (toDate != null) {
+            spec = spec.and(ApplicationSpecification.appliedDateTo(toDate));
+        }
+
+        return applicationRepository.findAll(spec, pageable);
     }
 
     @Transactional(readOnly = true)
