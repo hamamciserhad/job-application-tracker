@@ -23,6 +23,9 @@
       </nav>
 
       <div class="py-4 px-3 border-t border-gray-200">
+        <div v-if="authStore.user" class="px-3 py-2 mb-1 text-sm text-gray-700 font-medium truncate">
+          {{ authStore.user.name }}
+        </div>
         <button
           @click="logout"
           class="w-full text-left px-3 py-2 rounded-md text-sm font-medium text-gray-500 hover:bg-red-50 hover:text-red-600 transition-colors"
@@ -46,11 +49,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router'
+import { useAuthStore } from '../stores/authStore'
 
 const route = useRoute()
 const router = useRouter()
+const authStore = useAuthStore()
 
 const navItems = [
   { label: 'Dashboard', to: '/' },
@@ -69,8 +74,13 @@ const pageTitle = computed(() => {
 })
 
 const logout = () => {
-  localStorage.removeItem('accessToken')
-  localStorage.removeItem('refreshToken')
+  authStore.logout()
   router.push('/login')
 }
+
+onMounted(() => {
+  if (!authStore.user) {
+    authStore.fetchUser()
+  }
+})
 </script>
