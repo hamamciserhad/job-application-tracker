@@ -1,5 +1,15 @@
 <template>
   <div class="space-y-4">
+    <!-- Action row -->
+    <div class="flex justify-end">
+      <button
+        @click="openCreate"
+        class="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 transition-colors"
+      >
+        + New Application
+      </button>
+    </div>
+
     <!-- Filter bar -->
     <div class="bg-white rounded-lg border border-gray-200 p-4 flex flex-wrap gap-3 items-center">
       <input
@@ -62,7 +72,11 @@
         </svg>
         <p class="text-sm font-medium text-gray-500">No applications found</p>
         <p class="text-xs mt-1 text-gray-400">
-          {{ store.filters.companyName || store.filters.status ? 'Try adjusting your filters.' : 'Add your first application to get started.' }}
+          {{
+            store.filters.companyName || store.filters.status
+              ? 'Try adjusting your filters.'
+              : 'Add your first application to get started.'
+          }}
         </p>
       </div>
 
@@ -98,6 +112,12 @@
               >
                 View
               </RouterLink>
+              <button
+                @click="openEdit(app)"
+                class="text-gray-600 hover:text-gray-900 font-medium"
+              >
+                Edit
+              </button>
               <button
                 @click="confirmDelete(app)"
                 class="text-red-500 hover:text-red-700 font-medium"
@@ -154,6 +174,14 @@
         </div>
       </div>
     </div>
+
+    <!-- Application form modal -->
+    <ApplicationForm
+      v-if="showForm"
+      :application="editTarget"
+      @close="closeForm"
+      @saved="closeForm"
+    />
   </div>
 </template>
 
@@ -164,10 +192,13 @@ import { useApplicationStore } from '../stores/applicationStore'
 import type { Application } from '../stores/applicationStore'
 import StatusBadge from '../components/StatusBadge.vue'
 import Pagination from '../components/Pagination.vue'
+import ApplicationForm from '../components/ApplicationForm.vue'
 
 const store = useApplicationStore()
 const deleteTarget = ref<Application | null>(null)
 const deleting = ref(false)
+const showForm = ref(false)
+const editTarget = ref<Application | null>(null)
 
 const statuses = [
   { value: 'APPLIED', label: 'Applied' },
@@ -189,6 +220,21 @@ const clearFilters = () => {
   store.filters.companyName = ''
   store.filters.status = ''
   store.applyFilters()
+}
+
+const openCreate = () => {
+  editTarget.value = null
+  showForm.value = true
+}
+
+const openEdit = (app: Application) => {
+  editTarget.value = app
+  showForm.value = true
+}
+
+const closeForm = () => {
+  showForm.value = false
+  editTarget.value = null
 }
 
 const confirmDelete = (app: Application) => {

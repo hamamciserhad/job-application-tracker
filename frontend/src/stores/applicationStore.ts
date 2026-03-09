@@ -30,6 +30,17 @@ export interface PaginationInfo {
   totalPages: number
 }
 
+export interface ApplicationFormData {
+  companyName: string
+  position: string
+  status: string | null
+  salary: number | null
+  location: string | null
+  jobUrl: string | null
+  notes: string | null
+  appliedDate: string | null
+}
+
 export const useApplicationStore = defineStore('applications', () => {
   const applications = ref<Application[]>([])
   const loading = ref(false)
@@ -70,6 +81,16 @@ export const useApplicationStore = defineStore('applications', () => {
     }
   }
 
+  const createApplication = async (data: ApplicationFormData) => {
+    await api.post('/api/applications', data)
+    await fetchApplications()
+  }
+
+  const updateApplication = async (id: number, data: ApplicationFormData) => {
+    await api.put(`/api/applications/${id}`, data)
+    await fetchApplications()
+  }
+
   const deleteApplication = async (id: number) => {
     await api.delete(`/api/applications/${id}`)
     await fetchApplications()
@@ -92,6 +113,8 @@ export const useApplicationStore = defineStore('applications', () => {
     pagination,
     filters,
     fetchApplications,
+    createApplication,
+    updateApplication,
     deleteApplication,
     setPage,
     applyFilters
