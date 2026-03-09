@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-4">
+  <div class="space-y-4 min-w-0 w-full">
     <h1 class="text-xl font-semibold text-gray-900">Kanban Board</h1>
 
     <!-- Loading -->
@@ -16,11 +16,11 @@
     </div>
 
     <!-- Board -->
-    <div v-if="!loading" class="flex gap-3 overflow-x-auto pb-4">
+    <div v-if="!loading" class="flex gap-3 pb-4" style="overflow-x: scroll; scrollbar-width: auto;">
       <div
         v-for="col in COLUMNS"
         :key="col.status"
-        class="flex-shrink-0 w-60"
+        class="flex-shrink-0 w-52"
       >
         <!-- Column header -->
         <div class="flex items-center justify-between mb-2 px-1">
