@@ -16,11 +16,11 @@
     </div>
 
     <!-- Board -->
-    <div v-if="!loading" class="flex gap-3 pb-4" style="overflow-x: scroll; scrollbar-width: auto;">
+    <div v-if="!loading" class="flex gap-2 pb-4">
       <div
         v-for="col in COLUMNS"
         :key="col.status"
-        class="flex-shrink-0 w-52"
+        class="flex-1 min-w-0"
       >
         <!-- Column header -->
         <div class="flex items-center justify-between mb-2 px-1">
