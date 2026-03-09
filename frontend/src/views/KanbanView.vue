@@ -16,11 +16,11 @@
     </div>
 
     <!-- Board -->
-    <div v-if="!loading" class="pb-4" style="display: grid; grid-template-columns: repeat(8, 1fr); gap: 8px;">
+    <div v-if="!loading" class="flex gap-4 pb-6 overflow-x-auto w-full items-start">
       <div
         v-for="col in COLUMNS"
         :key="col.status"
-        class="min-w-0"
+        class="w-60 flex-shrink-0"
       >
         <!-- Column header -->
         <div class="flex items-center justify-between mb-2 px-1">
@@ -158,14 +158,14 @@ const onDrop = async (newStatus: string) => {
   const oldStatus = app.status
 
   // Optimistic update — move card immediately
-  const target = applications.value.find(a => a.id === app.id)
+  const target = applications.value.find((a: Application) => a.id === app.id)
   if (target) target.status = newStatus
 
   try {
     await api.patch(`/api/applications/${app.id}/status`, { status: newStatus })
   } catch {
     // Rollback on error
-    const t = applications.value.find(a => a.id === app.id)
+    const t = applications.value.find((a: Application) => a.id === app.id)
     if (t) t.status = oldStatus
     error.value = 'Failed to update status — change rolled back.'
     setTimeout(() => { error.value = null }, 4000)
