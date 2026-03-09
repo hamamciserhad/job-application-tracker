@@ -16,11 +16,11 @@
     </div>
 
     <!-- Board -->
-    <div v-if="!loading" class="flex gap-2 pb-4">
+    <div v-if="!loading" class="pb-4" style="display: grid; grid-template-columns: repeat(8, 1fr); gap: 8px;">
       <div
         v-for="col in COLUMNS"
         :key="col.status"
-        class="flex-1 min-w-0"
+        class="min-w-0"
       >
         <!-- Column header -->
         <div class="flex items-center justify-between mb-2 px-1">
