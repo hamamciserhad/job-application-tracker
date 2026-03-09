@@ -21,6 +21,7 @@ import java.time.LocalDate;
 public class ApplicationService {
 
     private final ApplicationRepository applicationRepository;
+    private final StatusHistoryService statusHistoryService;
 
     @Transactional(readOnly = true)
     public Page<Application> findAll(Long userId, ApplicationStatus status,
@@ -71,8 +72,11 @@ public class ApplicationService {
         Application app = findById(id, userId);
         app.setCompanyName(request.companyName());
         app.setPosition(request.position());
-        if (request.status() != null) {
+        if (request.status() != null && request.status() != app.getStatus()) {
+            ApplicationStatus oldStatus = app.getStatus();
             app.setStatus(request.status());
+            applicationRepository.save(app);
+            statusHistoryService.record(app, oldStatus, request.status());
         }
         app.setSalary(request.salary());
         app.setLocation(request.location());
@@ -80,6 +84,16 @@ public class ApplicationService {
         app.setNotes(request.notes());
         app.setAppliedDate(request.appliedDate());
         return applicationRepository.save(app);
+    }
+
+    @Transactional
+    public Application updateStatus(Long id, ApplicationStatus newStatus, Long userId) {
+        Application app = findById(id, userId);
+        ApplicationStatus oldStatus = app.getStatus();
+        app.setStatus(newStatus);
+        applicationRepository.save(app);
+        statusHistoryService.record(app, oldStatus, newStatus);
+        return app;
     }
 
     @Transactional

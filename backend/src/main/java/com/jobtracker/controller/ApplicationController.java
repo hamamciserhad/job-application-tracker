@@ -1,6 +1,7 @@
 package com.jobtracker.controller;
 
 import com.jobtracker.dto.request.ApplicationRequest;
+import com.jobtracker.dto.request.StatusRequest;
 import com.jobtracker.dto.response.ApiResponse;
 import com.jobtracker.dto.response.ApplicationResponse;
 import com.jobtracker.dto.response.PageResponse;
@@ -79,6 +80,16 @@ public class ApplicationController {
             @AuthenticationPrincipal UserDetails userDetails) {
         User user = resolveUser(userDetails);
         Application app = applicationService.update(id, request, user.getId());
+        return ResponseEntity.ok(ApiResponse.of(applicationMapper.toResponse(app)));
+    }
+
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<ApiResponse<ApplicationResponse>> updateStatus(
+            @PathVariable Long id,
+            @Valid @RequestBody StatusRequest request,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        User user = resolveUser(userDetails);
+        Application app = applicationService.updateStatus(id, request.status(), user.getId());
         return ResponseEntity.ok(ApiResponse.of(applicationMapper.toResponse(app)));
     }
 
