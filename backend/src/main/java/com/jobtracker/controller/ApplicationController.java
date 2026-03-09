@@ -5,12 +5,14 @@ import com.jobtracker.dto.request.StatusRequest;
 import com.jobtracker.dto.response.ApiResponse;
 import com.jobtracker.dto.response.ApplicationResponse;
 import com.jobtracker.dto.response.PageResponse;
+import com.jobtracker.dto.response.StatusHistoryResponse;
 import com.jobtracker.entity.Application;
 import com.jobtracker.entity.ApplicationStatus;
 import com.jobtracker.entity.User;
 import com.jobtracker.exception.ResourceNotFoundException;
 import com.jobtracker.mapper.ApplicationMapper;
 import com.jobtracker.service.ApplicationService;
+import com.jobtracker.service.StatusHistoryService;
 import com.jobtracker.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +27,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/applications")
@@ -34,6 +37,7 @@ public class ApplicationController {
     private final ApplicationService applicationService;
     private final ApplicationMapper applicationMapper;
     private final UserService userService;
+    private final StatusHistoryService statusHistoryService;
 
     private User resolveUser(UserDetails userDetails) {
         return userService.findByEmail(userDetails.getUsername())
@@ -62,6 +66,16 @@ public class ApplicationController {
         User user = resolveUser(userDetails);
         Application app = applicationService.findById(id, user.getId());
         return ResponseEntity.ok(ApiResponse.of(applicationMapper.toResponse(app)));
+    }
+
+    @GetMapping("/{id}/history")
+    public ResponseEntity<ApiResponse<List<StatusHistoryResponse>>> getHistory(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        User user = resolveUser(userDetails);
+        applicationService.findById(id, user.getId());
+        List<StatusHistoryResponse> history = statusHistoryService.getHistory(id);
+        return ResponseEntity.ok(ApiResponse.of(history));
     }
 
     @PostMapping
